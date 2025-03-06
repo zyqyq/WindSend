@@ -15,7 +15,7 @@ lazy_static! {
     pub static ref CONFIG_FILE_PATH: PathBuf = {
         #[cfg(target_os = "macos")]
         {
-            dirs::data_dir().unwrap()
+            dirs::data_local_dir().unwrap()
                 .join("Windsend/config.yaml")
         }
         #[cfg(not(target_os = "macos"))]
@@ -30,7 +30,7 @@ lazy_static! {
     pub static ref TLS_DIR: PathBuf = {
         #[cfg(target_os = "macos")]
         {
-            dirs::data_dir().unwrap()
+            dirs::data_local_dir().unwrap()
                 .join("Windsend/tls")
         }
         #[cfg(not(target_os = "macos"))]
@@ -81,18 +81,13 @@ lazy_static! {
         }
     };
 }
-#[cfg(not(target_os = "macos"))]
-pub fn get_icon_path() -> String {
-    "icon-192.png".to_string()
-}
 
 // 日志目录
 lazy_static! {
     pub static ref DEFAULT_LOG_DIR: PathBuf = {
         #[cfg(target_os = "macos")]
         {
-            dirs::data_local_dir().unwrap()
-                .join("Windsend/logs")
+            dirs::home_dir().unwrap().join("Library/Logs/Windsend/logs")
         }
         #[cfg(not(target_os = "macos"))]
         {

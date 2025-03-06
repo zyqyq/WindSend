@@ -12,6 +12,8 @@ disable-systray-support = []
 
 [dependencies]
 # tray-item = "0.8.0"
+notify-rust = "4.0"
+objc = "0.2.7"
 log = "0.4"
 aes = "0.8.3"
 hex = "0.4.3"

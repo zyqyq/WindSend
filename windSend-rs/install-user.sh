@@ -1,68 +1,58 @@
 #!/bin/bash
 
-INSTALL_DIR="$HOME/.local/WindSend-RS"
-SERVICE_NAME="windsend"
-EXECUTABLE_PATH="./WindSend-S-Rust"
-DESCRIPTION="WindSend Rust Server"
+# 定义变量
+INSTALL_DIR="$HOME/.windSend"
+EXECUTABLE_NAME="windSend-rs"
+SERVICE_NAME="com.user.windSend"
+LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-# check if already installed
+# 检查是否已安装
 if [ -d "$INSTALL_DIR" ]; then
-    echo -e "${RED}Reinstalling...${NC}"
-    ./uninstall.sh
-    sleep 6
+    echo "WindSend Rust Server 已经安装在 $INSTALL_DIR。如果需要重新安装，请先卸载。"
+    exit 1
 fi
 
+# 创建安装目录
 mkdir -p "$INSTALL_DIR"
+echo "创建安装目录: $INSTALL_DIR"
 
-echo -e "Install directory: ${RED}$INSTALL_DIR${NC}"
+# 复制可执行文件到安装目录
+cp "./$EXECUTABLE_NAME" "$INSTALL_DIR/$EXECUTABLE_NAME"
+chmod +x "$INSTALL_DIR/$EXECUTABLE_NAME"
+echo "复制可执行文件到安装目录"
 
-cp -r ./* "$INSTALL_DIR"
-
-mkdir -p "$HOME/.config/systemd/user"
-
-cat >"$HOME/.config/systemd/user/$SERVICE_NAME.service" <<EOF
-[Unit]
-Description=$DESCRIPTION
-After=network.target
-
-[Service]
-ExecStart=$INSTALL_DIR/$(basename $EXECUTABLE_PATH)
-WorkingDirectory=$INSTALL_DIR
-Restart=on-failure
-RestartSec=5s
-StartLimitIntervalSec=600s
-StartLimitBurst=100
-StandardError=syslog
-SyslogIdentifier=$SERVICE_NAME
-Environment=DISPLAY=$DISPLAY
-
-[Install]
-WantedBy=default.target
+# 创建 LaunchAgent 配置文件
+cat > "$LAUNCH_AGENTS_DIR/$SERVICE_NAME.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$SERVICE_NAME</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$INSTALL_DIR/$EXECUTABLE_NAME</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>$INSTALL_DIR/output.log</string>
+    <key>StandardErrorPath</key>
+    <string>$INSTALL_DIR/error.log</string>
+</dict>
+</plist>
 EOF
+echo "创建 LaunchAgent 配置文件: $LAUNCH_AGENTS_DIR/$SERVICE_NAME.plist"
 
-chmod +x "$INSTALL_DIR/$(basename $EXECUTABLE_PATH)"
-chmod +x "$INSTALL_DIR"/*.sh
+# 设置权限
+chmod 644 "$LAUNCH_AGENTS_DIR/cargo build --release --target aarch64-apple-darwin && cp target/aarch64-apple-darwin/release/<your_program_name> /path/to/destination$SERVICE_NAME.plist"
+echo "设置 LaunchAgent 配置文件权限"
 
-systemctl --user daemon-reload
-systemctl --user enable $SERVICE_NAME
+# 加载并启动服务
+launchctl load "$LAUNCH_AGENTS_DIR/$SERVICE_NAME.plist"
+launchctl start "$SERVICE_NAME"
+echo "服务已加载并启动"
 
-# 启用服务
-if ! systemctl --user start $SERVICE_NAME; then
-    echo -e "${RED}Failed to start the service${NC}"
-    exit 1
-fi
-
-# 检查服务状态
-sleep 3
-if [ "$(systemctl --user is-active $SERVICE_NAME)" == "active" ]; then
-    echo -e "${GREEN}Service started successfully${NC}"
-else
-    echo -e "${RED}Failed to start the service, use 'journalctl --user -u $SERVICE_NAME -e' to view the log${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}Installation completed${NC}"
+echo "WindSend Rust Server 安装完成！"

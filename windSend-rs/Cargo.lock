@@ -4908,6 +4908,7 @@ dependencies = [
  "lazy_static",
  "log",
  "notify-rust",
+ "objc",
  "openssl",
  "pem",
  "rand 0.9.0",

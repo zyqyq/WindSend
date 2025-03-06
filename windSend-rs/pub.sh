@@ -47,9 +47,9 @@ cat <<EOF > "${APP_BUNDLE}/Contents/Info.plist"
     <key>CFBundleIconFile</key>
     <string>AppIcon.icns</string>
     <key>com.apple.security.app-sandbox</key>
-    <false/>
+    <string>1</string>
     <key>LSUIElement</key>
-    <true/>
+    <string>1</string>
     <key>com.apple.security.network.client</key>
     <true/>
     <key>com.apple.security.files.user-selected.read-write</key>
@@ -60,6 +60,7 @@ EOF
 
 # 复制图标文件
 cp "$ICON_PATH" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
+echo "封装完成！生成的文件为 ${APP_NAME}.app"
 
 # 创建 .dmg
 # hdiutil create -volname "${APP_NAME}" \
@@ -68,4 +69,4 @@ cp "$ICON_PATH" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
 #                -format UDZO \
 #                "${APP_NAME}.dmg"
 
-echo "打包完成！生成的文件为 ${APP_NAME}.dmg"
+#echo "打包完成！生成的文件为 ${APP_NAME}.dmg"
