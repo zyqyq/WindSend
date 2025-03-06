@@ -39,3 +39,6 @@ go/icon_bytes
 TODO
 TODO.md
 .DS_Store
+windSend-rs/Windsend.app/*
+windSend-rs/.vscode/*
+windSend-rs/Windsend.app

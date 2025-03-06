@@ -50,25 +50,21 @@ pub static TLS_CA_KEY_FILE: &str = "ca_key.pem";
 pub static APP_ICON_NAME :&str ="icon-192.png";
 
 mod mac_utils {
-    use std::ffi::CStr;
-    use objc::{msg_send, sel, sel_impl};
-    use objc::runtime::Class;
-
     pub fn get_resource_dir() -> String {
         #[cfg(target_os = "macos")]
-        {
-            let ns_bundle: *mut objc::runtime::Object = unsafe {
-                msg_send![Class::get("NSBundle").unwrap(), mainBundle]
-            };
-            let resource_path: *mut objc::runtime::Object = unsafe {
-                msg_send![ns_bundle, resourcePath]
-            };
-            let resource_str = unsafe {
-                msg_send![resource_path, UTF8String]
-            };
-            let resource_cstr = unsafe { CStr::from_ptr(resource_str) };
-            resource_cstr.to_str().unwrap().to_string()
-        }
+    {
+        // 获取当前可执行文件的路径
+        let exe_path = std::env::current_exe().unwrap();
+        // 获取应用程序包的根目录
+        let bundle_path = exe_path
+            .parent()  // 可执行文件所在目录
+            .and_then(|p| p.parent())  // Contents 目录
+            .and_then(|p| p.parent())  // .app 目录
+            .unwrap_or_else(||std::path::Path::new("./"));
+        // 构建资源目录路径
+        let resource_dir = bundle_path.join("Contents/Resources");
+        resource_dir.display().to_string()
+    }
         #[cfg(not(target_os = "macos"))]
         {
             // 获取当前程序的工作目录
@@ -302,10 +298,10 @@ impl std::io::Write for LogWriter {
 pub fn init() {
     init_global_logger(*LOG_LEVEL);
 
-    let current_dir = std::env::current_dir().unwrap_or(std::path::PathBuf::from("./"));
-    let icon_path = format!("{}/icon-192.png", mac_utils::get_resource_dir());
+    let _current_dir = std::env::current_dir().unwrap_or(std::path::PathBuf::from("./"));
+    let icon_path = format!("{}/{}", mac_utils::get_resource_dir(), APP_ICON_NAME);
     debug!("icon_path: {:?}", icon_path);
-    APP_ICON_PATH.set(icon_path.display().to_string()).unwrap();
+    APP_ICON_PATH.set(icon_path).unwrap();
 
     init_tls_config();
 }
