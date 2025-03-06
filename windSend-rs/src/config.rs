@@ -46,41 +46,39 @@ pub static TLS_KEY_FILE: &str = "key.pem";
 pub static TLS_CA_CERT_FILE: &str = "ca_cert.pem";
 pub static TLS_CA_KEY_FILE: &str = "ca_key.pem";
 
-// 图标路径处理（Mac需要从资源目录获取）
-#[cfg(target_os = "macos")]
+// 图标路径处理
+pub static APP_ICON_NAME :&str ="icon-192.png";
+
 mod mac_utils {
     use std::ffi::CStr;
     use objc::{msg_send, sel, sel_impl};
     use objc::runtime::Class;
 
     pub fn get_resource_dir() -> String {
-        let ns_bundle: *mut objc::runtime::Object = unsafe {
-            msg_send![Class::get("NSBundle").unwrap(), mainBundle]
-        };
-        let resource_path: *mut objc::runtime::Object = unsafe {
-            msg_send![ns_bundle, resourcePath]
-        };
-        let resource_str = unsafe {
-            msg_send![resource_path, UTF8String]
-        };
-        let resource_cstr = unsafe { CStr::from_ptr(resource_str) };
-        resource_cstr.to_str().unwrap().to_string()
-    }
-}
-
-lazy_static! {
-    // 其他平台直接使用文件名，macOS需要完整路径
-    pub static ref APP_ICON_NAME: String = {
         #[cfg(target_os = "macos")]
         {
-            format!("{}/static/icon-192.png", mac_utils::get_resource_dir())
+            let ns_bundle: *mut objc::runtime::Object = unsafe {
+                msg_send![Class::get("NSBundle").unwrap(), mainBundle]
+            };
+            let resource_path: *mut objc::runtime::Object = unsafe {
+                msg_send![ns_bundle, resourcePath]
+            };
+            let resource_str = unsafe {
+                msg_send![resource_path, UTF8String]
+            };
+            let resource_cstr = unsafe { CStr::from_ptr(resource_str) };
+            resource_cstr.to_str().unwrap().to_string()
         }
         #[cfg(not(target_os = "macos"))]
         {
-            "icon-192.png".to_string()
+            // 获取当前程序的工作目录
+            std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("./")).display().to_string()
         }
-    };
+    }
 }
+
+ 
+    
 
 // 日志目录
 lazy_static! {
@@ -305,7 +303,7 @@ pub fn init() {
     init_global_logger(*LOG_LEVEL);
 
     let current_dir = std::env::current_dir().unwrap_or(std::path::PathBuf::from("./"));
-    let icon_path = current_dir.join(&*APP_ICON_NAME);
+    let icon_path = format!("{}/icon-192.png", mac_utils::get_resource_dir());
     debug!("icon_path: {:?}", icon_path);
     APP_ICON_PATH.set(icon_path.display().to_string()).unwrap();
 
