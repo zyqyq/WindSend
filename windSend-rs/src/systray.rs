@@ -15,6 +15,9 @@ use crate::utils;
 use crate::web;
 use crate::PROGRAM_NAME;
 
+#[cfg(target_os = "macos")]
+  use tao::platform::macos::{ActivationPolicy, EventLoopExtMacOS};
+
 // use global_hotkey::hotkey::Modifiers as hotkey_Modifiers;
 // use global_hotkey::{
 //     hotkey::{Code, HotKey},
@@ -65,6 +68,8 @@ fn loop_systray(mr: MenuReceiver) -> ReturnCode {
 
     // before Menu::new()
     let mut event_loop = EventLoopBuilder::new().build();
+    #[cfg(target_os = "macos")]
+    event_loop.set_activation_policy(ActivationPolicy::Accessory);
 
     let icon = load_icon();
     let tray_menu = Menu::new();
