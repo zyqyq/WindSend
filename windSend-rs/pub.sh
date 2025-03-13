@@ -4,7 +4,7 @@
 WORK_DIR="/Users/zyqyq/Program/WindSend/windSend-rs"
 BINARY_PATH="${WORK_DIR}/target/aarch64-apple-darwin/release/wind_send"
 ICONS_PATH="/Users/zyqyq/Program/WindSend/app_icon/macos/AppIcon.icns"
-ICON_PATH="/Users/zyqyq/Program/WindSend/windSend-rs/src/icon-192.png"
+ICON_PATH="/Users/zyqyq/Program/WindSend/windSend-rs/icon-192.png"
 APP_NAME="Windsend"
 VERSION="1.4.101"
 APP_BUNDLE="${APP_NAME}.app"
@@ -27,7 +27,7 @@ mkdir -p "${APP_BUNDLE}/Contents/Resources"
 
 # 复制二进制文件并赋予可执行权限
 cp "$BINARY_PATH" "${APP_BUNDLE}/Contents/MacOS/"
-chmod +x "${APP_BUNDLE}/Contents/MacOS/wind_send"  # 关键修复：确保可执行权限
+# chmod +x "${APP_BUNDLE}/Contents/MacOS/wind_send"
 
 # 创建 Info.plist
 cat <<EOF > "${APP_BUNDLE}/Contents/Info.plist"
@@ -62,11 +62,28 @@ cp "$ICONS_PATH" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
 cp "$ICON_PATH" "${APP_BUNDLE}/Contents/Resources/icon-192.png"
 echo "封装完成！生成的文件为 ${APP_NAME}.app"
 
-# 创建 .dmg
-# hdiutil create -volname "${APP_NAME}" \
-#                -srcfolder "${APP_BUNDLE}" \
-#                -ov \
-#                -format UDZO \
-#                "${APP_NAME}.dmg"
+# 创建临时的读写 .dmg
+RW_DMG="${APP_NAME}_temp.dmg"
+hdiutil create -volname "${APP_NAME}" \
+               -srcfolder "${APP_BUNDLE}" \
+               -ov \
+               -format UDRW \
+               "${RW_DMG}"
 
-#echo "打包完成！生成的文件为 ${APP_NAME}.dmg"
+# 挂载临时 .dmg
+MOUNT_POINT="/Volumes/${APP_NAME}"
+hdiutil attach "${RW_DMG}" -mountpoint "${MOUNT_POINT}"
+
+# 添加 Applications 快捷方式
+ln -s /Applications "${MOUNT_POINT}/Applications"
+
+# 卸载临时 .dmg
+hdiutil detach "${MOUNT_POINT}"
+
+# 将临时 .dmg 转换为压缩的只读 .dmg
+hdiutil convert "${RW_DMG}" -format UDZO -o "${APP_NAME}.dmg"
+
+# 删除临时 .dmg
+rm -f "${RW_DMG}"
+
+echo "打包完成！生成的文件为 ${APP_NAME}.dmg"
