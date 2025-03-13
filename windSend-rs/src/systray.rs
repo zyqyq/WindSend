@@ -530,6 +530,7 @@ fn loop_systray(mr: MenuReceiver) -> ReturnCode {
 
 async fn handle_menu_event_add_files(add_item: &MenuItem, clear_item: &MenuItem) {
     let pick_task = rfd::AsyncFileDialog::new().pick_files();
+    println!("pick_files");
     let files = match pick_task.await {
         Some(files) => files,
         None => {

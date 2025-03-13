@@ -106,3 +106,10 @@ windres = "*"
 
 [dev-dependencies]
 tao = "0.31"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.23"
+#winit = "0.28"
+#winit = { version = "0.29", features = ["macos"] }
+#winit = "0.28.0"
+winit = "0.30.0"

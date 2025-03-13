@@ -14,13 +14,7 @@
     <string>1.4.101</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon.icns</string>
-    <key>com.apple.security.app-sandbox</key>
-    <string>1</string>
     <key>LSUIElement</key>
-    <string>1</string>
-    <key>com.apple.security.network.client</key>
-    <true/>
-    <key>com.apple.security.files.user-selected.read-write</key>
     <true/>
 </dict>
 </plist>

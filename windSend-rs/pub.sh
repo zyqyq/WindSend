@@ -3,7 +3,8 @@
 # 定义变量
 WORK_DIR="/Users/zyqyq/Program/WindSend/windSend-rs"
 BINARY_PATH="${WORK_DIR}/target/aarch64-apple-darwin/release/wind_send"
-ICON_PATH="/Users/zyqyq/Program/WindSend/app_icon/macos/AppIcon.icns"
+ICONS_PATH="/Users/zyqyq/Program/WindSend/app_icon/macos/AppIcon.icns"
+ICON_PATH="/Users/zyqyq/Program/WindSend/windSend-rs/src/icon-192.png"
 APP_NAME="Windsend"
 VERSION="1.4.101"
 APP_BUNDLE="${APP_NAME}.app"
@@ -46,10 +47,8 @@ cat <<EOF > "${APP_BUNDLE}/Contents/Info.plist"
     <string>${VERSION}</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon.icns</string>
-    <key>com.apple.security.app-sandbox</key>
-    <string>1</string>
     <key>LSUIElement</key>
-    <string>1</string>
+    <true/>
     <key>com.apple.security.network.client</key>
     <true/>
     <key>com.apple.security.files.user-selected.read-write</key>
@@ -59,7 +58,8 @@ cat <<EOF > "${APP_BUNDLE}/Contents/Info.plist"
 EOF
 
 # 复制图标文件
-cp "$ICON_PATH" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
+cp "$ICONS_PATH" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns"
+cp "$ICON_PATH" "${APP_BUNDLE}/Contents/Resources/icon-192.png"
 echo "封装完成！生成的文件为 ${APP_NAME}.app"
 
 # 创建 .dmg
