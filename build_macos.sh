@@ -75,7 +75,6 @@ ICONS_PATH="${WINDSEND_PROJECT_PATH}/app_icon/macos/AppIcon.icns"
 ICON_PATH="$WINDSEND_RUST_PROJECT_PATH/$SERVER_PROGRAM_ICON_NAME"
 APP_NAME="Windsend"
 APP_BUNDLE="${APP_NAME}.app"
-WINDSEND_PROJECT_VERSION="1.4.101"
 
 mkdir -p "${APP_BUNDLE}/Contents/MacOS"
 mkdir -p "${APP_BUNDLE}/Contents/Resources"
