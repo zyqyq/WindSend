@@ -528,32 +528,25 @@ fn loop_systray(mr: MenuReceiver) -> ReturnCode {
     exit_code
 }
 
-async fn handle_menu_event_add_files(add_item: &MenuItem, clear_item: &MenuItem) {
-    let pick_task = rfd::AsyncFileDialog::new().pick_files();
-    println!("pick_files");
-    let files = match pick_task.await {
-        Some(files) => files,
-        None => {
-            warn!("pick_files failed or canceled");
-            return;
+ async fn handle_menu_event_add_files(add_item: &MenuItem, clear_item: &MenuItem) {
+    debug!("Starting file dialog");
+    let files = rfd::FileDialog::new().pick_files();
+    if let Some(files) = files {
+        let mut selected_files = SELECTED_FILES.get().unwrap().lock().unwrap();
+        for file in files {
+            debug!("selected file: {:?}", file);
+            selected_files.insert(file.as_path().to_str().unwrap().to_string());
         }
-    };
-    let mut selected_files = SELECTED_FILES.get().unwrap().lock().unwrap();
-    for file in files {
-        debug!("selected file: {:?}", file);
-        selected_files.insert(file.path().to_str().unwrap().to_string());
+        clear_item.set_enabled(true);
+        add_item.set_text(format!(
+            "{} - {}",
+            LANGUAGE_MANAGER.read().unwrap().translate(LanguageKey::AddFiles),
+            selected_files.len()
+        ));
+    } else {
+        warn!("File dialog canceled");
     }
-    clear_item.set_enabled(true);
-    add_item.set_text(format!(
-        "{} - {}",
-        LANGUAGE_MANAGER
-            .read()
-            .unwrap()
-            .translate(LanguageKey::AddFiles),
-        selected_files.len()
-    ));
 }
-
 fn handle_menu_event_update_relay_server_connected(relay_server_connected_i: &CheckMenuItem) {
     let relay_server_connected = *crate::status::RELAY_SERVER_CONNECTED.lock().unwrap();
     relay_server_connected_i.set_checked(relay_server_connected);
@@ -571,21 +564,20 @@ fn handle_menu_event_update_relay_server_connected(relay_server_connected_i: &Ch
 }
 
 async fn handle_menu_event_save_path() {
-    let pick_task = rfd::AsyncFileDialog::new().pick_folder();
-    let path = match pick_task.await {
-        Some(path) => path,
-        None => {
-            warn!("pick folder error");
-            return;
+    debug!("Opening folder dialog for save path...");
+    let folder = rfd::FileDialog::new().pick_folder();
+    if let Some(path) = folder {
+        let mut config = config::GLOBAL_CONFIG.write().unwrap();
+        config.save_path = path.as_path().to_str().unwrap().to_string();
+        debug!("Save path updated to: {}", config.save_path);
+        if let Err(err) = config.save_and_set() {
+            error!("Failed to save config: {}", err);
         }
-    };
-    let mut config = config::GLOBAL_CONFIG.write().unwrap();
-    config.save_path = path.path().to_str().unwrap().to_string();
-    debug!("change save path to: {}", config.save_path);
-    if let Err(err) = config.save_and_set() {
-        error!("save config error: {}", err);
+    } else {
+        warn!("Folder selection canceled");
     }
 }
+
 
 async fn handle_menu_event_paste_to_web() {
     let clipboard_text = config::CLIPBOARD.read_text();
